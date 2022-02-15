@@ -1,4 +1,6 @@
 import 'package:challenge_in_session/model/general_user.dart';
+import 'package:challenge_in_session/notificationScreen.dart';
+import 'package:challenge_in_session/sendNotifyScreen.dart';
 import 'package:challenge_in_session/services/authService.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -61,38 +63,65 @@ class _TokensScreenState extends State<TokensScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.amber,
-      child: StreamBuilder<List<GeneralUser>>(
-          stream: getUsers(),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return Center(
-                child: CircularProgressIndicator(),
-              );
-            } else if (snapshot.hasError) {
-              return Text(snapshot.error.toString());
-            } else {
-              return ListView.builder(
-                  itemCount: snapshot.data!.length,
-                  itemBuilder: (context, index) {
-                    return tokenCard(snapshot.data![index]);
-                  });
-            }
-          }),
+    return Column(
+      children: [
+        ElevatedButton(
+          onPressed: () {
+            Navigator.of(context)
+                .push(MaterialPageRoute(builder: (context) => NotifyScreen()));
+          },
+          child: Text('tap to go to notify screen'),
+        ),
+        Container(
+          color: Colors.amber,
+          child: StreamBuilder<List<GeneralUser>>(
+              stream: getUsers(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return Center(
+                    child: CircularProgressIndicator(),
+                  );
+                } else if (snapshot.hasError) {
+                  return Text(snapshot.error.toString());
+                } else {
+                  return Container(
+                    height: 400,
+                    child: ListView.builder(
+                        itemCount: snapshot.data!.length,
+                        itemBuilder: (context, index) {
+                          return tokenCard(snapshot.data![index]);
+                        }),
+                  );
+                }
+              }),
+        ),
+      ],
     );
   }
 
   Widget tokenCard(GeneralUser theUser) {
-    return Card(
-      child: Column(
-        children: [
-          Text('the uid: ' + theUser.uid),
-          SizedBox(
-            height: 30,
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SendNotifyScreen(
+              token: theUser.tokens.first,
+            ),
           ),
-          Text('the token: ' + theUser.tokens.first),
-        ],
+        );
+        // Navigator.of(context).pop();
+      },
+      child: Card(
+        child: Column(
+          children: [
+            Text('the uid: ' + theUser.uid),
+            SizedBox(
+              height: 30,
+            ),
+            Text('the token: ' + theUser.tokens.first),
+          ],
+        ),
       ),
     );
   }
